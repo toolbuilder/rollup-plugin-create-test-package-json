@@ -1,11 +1,13 @@
 dependencies:
   esm: 3.2.25
   fs-extra: 9.0.0
-  loglevel: 1.6.8
   pkg-dir: 4.2.0
 devDependencies:
   '@toolbuilder/eslint-config': 0.1.2
+  cuid: 2.1.8
+  date-fns: 2.14.0
   eslint: 7.0.0
+  iterablefu: 0.4.1
   npm-run-all: 4.1.5
   tape: 5.0.0
   zora: 3.1.9
@@ -38,6 +40,12 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-m0jxly9Gc+EbomuokG599svVIqhz5mFVnaWyY+T8N1zs9FAdBOk1F32SNp9zWZX7ytM79mMbTITSzb8mH/SpBw==
+  /@toolbuilder/make-factory/0.1.1:
+    dependencies:
+      esm: 3.2.25
+    dev: true
+    resolution:
+      integrity: sha512-b+vaUbLbweb6OJhk+L4A0uj8/6KId7VZblvJ3yGgLS6aTFpAysGItpT0kkZSl6UJxoDBhpEnONhIkixTodrHhg==
   /@types/color-name/1.1.1:
     dev: true
     resolution:
@@ -242,6 +250,14 @@ packages:
       node: '>= 8'
     resolution:
       integrity: sha512-PD6G8QG3S4FK/XCGFbEQrDqO2AnMMsy0meR7lerlIOHAAbkuavGU/pOqprrlvfTNjvowivTeBsjebAL0NSoMxw==
+  /cuid/2.1.8:
+    dev: true
+    resolution:
+      integrity: sha512-xiEMER6E7TlTPnDxrM4eRiC6TRgjNX9xzEZ5U/Se2YJKr7Mq4pJn/2XEHjl3STcSh96GmkHPcBXLES8M29wyyg==
+  /date-fns/2.14.0:
+    dev: true
+    resolution:
+      integrity: sha512-1zD+68jhFgDIM0rF05rcwYO8cExdNqxjq4xP1QKM60Q45mnO6zaMWB4tOzrIr4M4GSLntsKeE4c9Bdl2jhL/yw==
   /debug/4.1.1:
     dependencies:
       ms: 2.1.2
@@ -815,6 +831,13 @@ packages:
     dev: true
     resolution:
       integrity: sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
+  /iterablefu/0.4.1:
+    dependencies:
+      '@toolbuilder/make-factory': 0.1.1
+      esm: 3.2.25
+    dev: true
+    resolution:
+      integrity: sha512-LhokzaIPYfwiI5Iad5nDjn8H7x6v0Qv+8HGUrKPevivD4gd+ByB9nllcGeg5vBAcfVTTKH5j2LXbFbH5rH4oTQ==
   /js-tokens/4.0.0:
     dev: true
     resolution:
@@ -878,12 +901,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
-  /loglevel/1.6.8:
-    dev: false
-    engines:
-      node: '>= 0.6.0'
-    resolution:
-      integrity: sha512-bsU7+gc9AJ2SqpzxwU3+1fedl8zAntbtC5XYlt3s2j1hJcn2PsXSmgN8TaLG/J1/2mod4+cE/3vNL70/c1RNCA==
   /memorystream/0.3.1:
     dev: true
     engines:
@@ -1582,10 +1599,12 @@ packages:
       integrity: sha512-6jd7VEVTVAJFESLW9WMfomKLbOPy2SOcV+LrKn87VgpUfdoUiIxOJgu8pYvWzk85qbglnfzh/TDRjsbknurN6A==
 specifiers:
   '@toolbuilder/eslint-config': '>=0.1.2'
+  cuid: ^2.1.8
+  date-fns: ^2.14.0
   eslint: '>=6.8.0'
   esm: ^3.2.25
   fs-extra: ^9.0.0
-  loglevel: ^1.6.8
+  iterablefu: ^0.4.1
   npm-run-all: ^4.1.5
   pkg-dir: ^4.2.0
   tape: ^5.0.0

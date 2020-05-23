@@ -16,7 +16,7 @@ const collectDependencies = (bundle) => {
   for (const chunk of Object.values(bundle)) {
     if (chunk.type === 'asset') continue
     dependencies.push(chunk.imports)
-    dependencies.push(chunk.dynamicImports)
+    // dependencies.push(chunk.dynamicImports) // TODO not sure here
   }
   return dependencies.flat() // return Array of external package names
 }
@@ -64,6 +64,7 @@ export default (userOptions = {}) => {
     rootDir: undefined, // where to find packageJson if not provided
     packageJson: undefined, // information about package to be tested
     testPackageJson: {}, // package.json for test package to be enhanced by this plugin
+    jsonWriter: async (path, json) => fs.writeJSON(path, json, { spaces: 2 }), // option for unit tests
     ...userOptions
   }
   return {
@@ -75,19 +76,17 @@ export default (userOptions = {}) => {
       } catch (error) {
         this.error(`Problem loading package.json, check 'rootDir' option which is: ${options.rootDir}. Message ${error.message}`)
       }
+      return options.packageJson // Rollup won't use this, but the test will
     },
 
-    async generateBundle (outputOptions, bundle, isWrite) {
-      if (!isWrite) this.error('This package needs to write to disk, and Rollup is not writing to disk with this configuration')
-      const testPackageJson = { dependencies: {}, ...options.testPackageJson } // ensure it has dependencies Object
-      options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
-    },
-
+    // generateBundle not needed because no need to generate package.json if not writing test files
     // renderError not needed
 
-    async writeBundle (outputOptions, chunks) {
+    async writeBundle (outputOptions, bundle) {
+      const testPackageJson = { dependencies: {}, ...options.testPackageJson } // ensure it has dependencies Object
+      options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
       const path = join(outputOptions.dir, 'package.json')
-      await fs.writeJSON(path, options.testPackageJson, { spaces: 2 })
+      await options.jsonWriter(path, options.testPackageJson)
     }
   }
 }
