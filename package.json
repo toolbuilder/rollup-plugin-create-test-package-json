@@ -1,5 +1,5 @@
 {
-  "name": "rollup-plugin-generate-test-package",
+  "name": "rollup-plugin-create-test-package-json",
   "version": "0.1.0-rc0",
   "keywords": [],
   "license": "MIT",
@@ -17,8 +17,6 @@
     "extends": "@toolbuilder/eslint-config"
   },
   "dependencies": {
-    "cuid": "^2.1.8",
-    "date-fns": "^2.14.0",
     "esm": "^3.2.25",
     "fs-extra": "^9.0.0",
     "loglevel": "^1.6.8",

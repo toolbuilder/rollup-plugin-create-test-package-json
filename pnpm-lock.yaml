@@ -1,6 +1,4 @@
 dependencies:
-  cuid: 2.1.8
-  date-fns: 2.14.0
   esm: 3.2.25
   fs-extra: 9.0.0
   loglevel: 1.6.8
@@ -244,14 +242,6 @@ packages:
       node: '>= 8'
     resolution:
       integrity: sha512-PD6G8QG3S4FK/XCGFbEQrDqO2AnMMsy0meR7lerlIOHAAbkuavGU/pOqprrlvfTNjvowivTeBsjebAL0NSoMxw==
-  /cuid/2.1.8:
-    dev: false
-    resolution:
-      integrity: sha512-xiEMER6E7TlTPnDxrM4eRiC6TRgjNX9xzEZ5U/Se2YJKr7Mq4pJn/2XEHjl3STcSh96GmkHPcBXLES8M29wyyg==
-  /date-fns/2.14.0:
-    dev: false
-    resolution:
-      integrity: sha512-1zD+68jhFgDIM0rF05rcwYO8cExdNqxjq4xP1QKM60Q45mnO6zaMWB4tOzrIr4M4GSLntsKeE4c9Bdl2jhL/yw==
   /debug/4.1.1:
     dependencies:
       ms: 2.1.2
@@ -1592,8 +1582,6 @@ packages:
       integrity: sha512-6jd7VEVTVAJFESLW9WMfomKLbOPy2SOcV+LrKn87VgpUfdoUiIxOJgu8pYvWzk85qbglnfzh/TDRjsbknurN6A==
 specifiers:
   '@toolbuilder/eslint-config': '>=0.1.2'
-  cuid: ^2.1.8
-  date-fns: ^2.14.0
   eslint: '>=6.8.0'
   esm: ^3.2.25
   fs-extra: ^9.0.0

@@ -1,15 +1,6 @@
-import cuid from 'cuid'
-import { format } from 'date-fns'
 import fs from 'fs-extra'
-import { tmpdir } from 'os'
 import { join } from 'path'
 import pkgDir from 'pkg-dir'
-
-const makeTempPath = (prefix = 'test-package') => {
-  // formatISO emits colons for the time part, which can be problematic on command lines as NPM parameters
-  const timePart = format(Date.now(), 'yyyy-MM-dd-kk-mm')
-  return join(tmpdir(), `${prefix}-${timePart}-${cuid.slug()}`) // slug provides uniqueness in same minute
-}
 
 // Create the dependency version string for the pack file being tested
 const packFileDependency = (packageJson) => {
@@ -18,6 +9,7 @@ const packFileDependency = (packageJson) => {
   return `file:${name}-${version}.tgz`
 }
 
+// Walk through Rollup bundle and collect dependency ids
 const collectDependencies = (bundle) => {
   const dependencies = []
   for (const chunk of Object.values(bundle)) {
@@ -29,10 +21,8 @@ const collectDependencies = (bundle) => {
 }
 
 /*
-  For each dependency package name, copy package version information from packageJson
-  to build dependencies field for testPackageJson.
-
-  testDependencies is just an array of external package names
+  Merge dependency version information from packageJson with dependency ids
+  Parameter testDependencies is just an array of external package names
 */
 const buildTestDependencies = (packageJson, testDependencies) => {
   const allPackageDependencies = {
@@ -57,22 +47,12 @@ export default (userOptions = {}) => {
     ...userOptions
   }
   return {
-    name: 'generate-test-package',
-
-    outputOptions (outputOptions) {
-      if (outputOptions.dir == null) {
-        const tempPath = makeTempPath()
-        console.log(tempPath)
-        return { ...outputOptions, dir: tempPath }
-      }
-    },
+    name: 'create-test-package-json',
 
     async renderStart (outputOptions, inputOptions) {
-      // Want to create this outputOptions.dir ASAP so that other code can write to it
-      await fs.ensureDir(outputOptions.dir)
       options.packageJson = options.packageJson || await readPackageJson(options.rootDir)
       options.testPackageJson = {
-        name: 'packageTest',
+        name: `${options.packageJson.name}-package-test`,
         version: '1.0.0',
         description: `Generated package test for ${options.packageJson.name}`,
         main: 'index.js',
@@ -80,35 +60,27 @@ export default (userOptions = {}) => {
         author: 'rollup-plugin-test-package-json',
         dependencies: {},
         devDependencies: {},
-        ...(options.testPackageJson || {})
+        ...options.testPackageJson
       }
     },
 
-    async generateBundle (outputOptions, bundle) {
-      console.log('IN generateBundle')
-      const testDir = outputOptions.dir
+    async generateBundle (outputOptions, bundle, isWrite) {
+      if (!isWrite) this.error('create-test-package-json only works when writing to disk')
       const packageJson = options.packageJson
       const testPackageJson = options.testPackageJson
       testPackageJson.dependencies = {
         ...buildTestDependencies(packageJson, collectDependencies(bundle)),
+        [packageJson.name]: packFileDependency(packageJson), // for some reason, not picking this up from Rollup
         ...testPackageJson.dependencies
       }
-      await fs.writeJSON(join(testDir, 'package.json'), testPackageJson, { spaces: 2 })
     },
 
-    async renderError () { /* No cleanup required */ },
+    async renderError () { /* Nothing to do */ },
 
     async writeBundle (outputOptions, chunks) {
-      console.log('IN writeBundle!')
-      /*
-        Hmmm, renderStart documentation says to use generateBundle and renderError to know when
-        output is complete.
-        However, the writeBundle docs seem to indicate that if bundle.write is used, this is the
-        method called when output is complete. Arrgh.
-        Programmatic rollup use looks like this to just write files:
-          const bundle = await rollup(inputOptions)
-          await bundle.write(outputOptions)
-      */
+      const testPackageJson = options.testPackageJson
+      const testDir = outputOptions.dir
+      await fs.writeJSON(join(testDir, 'package.json'), testPackageJson, { spaces: 2 })
     }
   }
 }
