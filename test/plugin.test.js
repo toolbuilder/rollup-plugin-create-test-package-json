@@ -1,11 +1,11 @@
 import cuid from 'cuid'
 import { format } from 'date-fns'
 import fs from 'fs-extra'
+import { chainable } from 'iterablefu'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { test } from 'zora'
 import createTestPackageJson from '../src/plugin'
-import { chainable } from 'iterablefu'
 
 const makeTempPath = (prefix) => {
   // formatISO emits colons for the time part, which can be problematic on command lines as NPM parameters
@@ -45,7 +45,7 @@ class FakeJsonWriter {
     this.packageJson = undefined
   }
 
-  writeJson (path, json, options) {
+  writeJson (path, json) {
     this.path = path
     this.packageJson = json
   }
@@ -111,17 +111,26 @@ test('does not load external package.json when one is provided', async assert =>
   following tests do.
 */
 
-test('calls jsonWriter correctly', async assert => {
+test('uses outputOptions.dir for package.json location if available', async assert => {
   const writer = new FakeJsonWriter()
   const plugin = createTestPackageJson({
-    packageJson: fakePackageJson,
-    jsonWriter: async (j, p) => { writer.writeJson(j, p) }
+    fakePackageJson,
+    jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
   })
   await plugin.renderStart()
-  const dir = 'path/to/json'
-  await plugin.writeBundle({ dir }, {})
-  assert.deepEqual(writer.path, join(dir, 'package.json'), 'used correct path')
-  assert.ok(writer.packageJson != null, 'used packageJson') // we'll check better in other tests
+  await plugin.writeBundle({ dir: 'do-not-care' }, fakeBundles)
+  assert.deepEqual(writer.path, join('do-not-care', 'package.json'), 'dir used correctly')
+})
+
+test('infers package.json output path from outputOptions.file if provided', async assert => {
+  const writer = new FakeJsonWriter()
+  const plugin = createTestPackageJson({
+    fakePackageJson,
+    jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
+  })
+  await plugin.renderStart()
+  await plugin.writeBundle({ file: join('do-not-care', 'bundle.js') }, fakeBundles)
+  assert.deepEqual(writer.path, join('do-not-care', 'package.json'), 'file used correctly')
 })
 
 test('gets dependencies from bundles, and versions from package.json', async assert => {

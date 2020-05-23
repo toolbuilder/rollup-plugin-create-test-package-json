@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import pkgDir from 'pkg-dir'
 
 // Create the dependency version string for the pack file being tested.
@@ -88,7 +88,8 @@ export default (userOptions = {}) => {
     async writeBundle (outputOptions, bundle) {
       const testPackageJson = { dependencies: {}, ...options.testPackageJson } // ensure it has dependencies Object
       options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
-      const path = join(outputOptions.dir, 'package.json')
+      const outputDir = outputOptions.dir || dirname(outputOptions.file)
+      const path = join(outputDir, 'package.json')
       await options.jsonWriter(path, options.testPackageJson)
     }
   }
