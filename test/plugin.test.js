@@ -13,26 +13,6 @@ const makeTempPath = (prefix) => {
   return join(tmpdir(), `${prefix}-${timePart}-${cuid.slug()}`) // slug provides uniqueness in same minute
 }
 
-test('loads package.json from default location', async assert => {
-  const plugin = createTestPackageJson()
-  const actualPackageJson = await plugin.renderStart()
-  const expectedPackageJson = await fs.readJSON(join(process.cwd(), 'package.json'))
-  assert.deepEqual(actualPackageJson, expectedPackageJson, 'loaded package.json correctly')
-})
-
-test('loads package.json from specified location', async assert => {
-  const rootDir = makeTempPath('create-test-package-json')
-  await fs.ensureDir(rootDir)
-  const srcPath = join(process.cwd(), 'package.json')
-  const dstPath = join(rootDir, 'package.json')
-  const expectedPackageJson = await fs.readJSON(srcPath)
-  expectedPackageJson.description = 'some other description so it does not look exactly like local package.json'
-  await fs.writeJSON(dstPath, expectedPackageJson, { spaces: 2 })
-  const plugin = createTestPackageJson({ rootDir })
-  const actualPackageJson = await plugin.renderStart() // Rollup wouldn't use this return value
-  assert.deepEqual(actualPackageJson, expectedPackageJson, 'loaded package.json correctly')
-})
-
 const fakeBundles = {
   dep1: { type: 'chunk', imports: ['lodash', 'underscore', 'cuid'] },
   // next ensure duplicates are handled: lodash,
@@ -71,6 +51,51 @@ class FakeJsonWriter {
   }
 }
 
+// Although done programmatically, the implementation is substantially different from the plugin's
+const buildExpectedDependencies = (packageJson, bundles) => {
+  const allDependencies = { ...packageJson.dependencies, ...packageJson.devDependencies }
+  const expectedEntries = chainable(Object.values(bundles))
+    .filter(chunk => chunk.type === 'chunk')
+    .pluck('imports')
+    .flatten()
+    .map(name => [name, allDependencies[name]])
+    .toArray()
+    .concat([['fake-package', 'file:fake-package-1.0.0-superfake.tgz']])
+  return Object.fromEntries(expectedEntries)
+}
+
+const excercisePlugin = async (packageJson, testPackageJson) => {
+  const writer = new FakeJsonWriter()
+  const plugin = createTestPackageJson({
+    packageJson,
+    testPackageJson,
+    jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
+  })
+  await plugin.renderStart()
+  await plugin.writeBundle({ dir: 'do-not-care' }, fakeBundles)
+  return writer
+}
+
+test('loads package.json from default location', async assert => {
+  const plugin = createTestPackageJson()
+  const actualPackageJson = await plugin.renderStart()
+  const expectedPackageJson = await fs.readJSON(join(process.cwd(), 'package.json'))
+  assert.deepEqual(actualPackageJson, expectedPackageJson, 'loaded package.json correctly')
+})
+
+test('loads package.json from specified location', async assert => {
+  const rootDir = makeTempPath('create-test-package-json')
+  await fs.ensureDir(rootDir)
+  const srcPath = join(process.cwd(), 'package.json')
+  const dstPath = join(rootDir, 'package.json')
+  const expectedPackageJson = await fs.readJSON(srcPath)
+  expectedPackageJson.description = 'some other description so it does not look exactly like local package.json'
+  await fs.writeJSON(dstPath, expectedPackageJson, { spaces: 2 })
+  const plugin = createTestPackageJson({ rootDir })
+  const actualPackageJson = await plugin.renderStart() // Rollup wouldn't use this return value
+  assert.deepEqual(actualPackageJson, expectedPackageJson, 'loaded package.json correctly')
+})
+
 test('does not load external package.json when one is provided', async assert => {
   const packageJson = {}
   const plugin = createTestPackageJson({ packageJson, rootDir: makeTempPath('does-not-exist') })
@@ -78,6 +103,13 @@ test('does not load external package.json when one is provided', async assert =>
   const actualPackageJson = await plugin.renderStart()
   assert.deepEqual(actualPackageJson, {}, 'did not load a package.json')
 })
+
+/*
+  From here on package.json will be provided as an option to the test
+  so that it does not read from the filesystem. There is no test
+  called 'uses packageJson provided as option' because ALL of the
+  following tests do.
+*/
 
 test('calls jsonWriter correctly', async assert => {
   const writer = new FakeJsonWriter()
@@ -92,29 +124,62 @@ test('calls jsonWriter correctly', async assert => {
   assert.ok(writer.packageJson != null, 'used packageJson') // we'll check better in other tests
 })
 
-// Although done programmatically, the implementation is substantially different from the plugin's
-const buildExpectedDependencies = (packageJson, bundles) => {
-  const allDependencies = { ...packageJson.dependencies, ...packageJson.devDependencies }
-  const expectedEntries = chainable(Object.values(bundles))
-    .filter(chunk => chunk.type === 'chunk')
-    .pluck('imports')
-    .flatten()
-    .map(name => [name, allDependencies[name]])
-    .toArray()
-    .concat([['fake-package', 'file:fake-package-1.0.0-superfake.tgz']])
-  return Object.fromEntries(expectedEntries)
-}
-
 test('gets dependencies from bundles, and versions from package.json', async assert => {
-  const writer = new FakeJsonWriter()
-  const plugin = createTestPackageJson({
-    packageJson: fakePackageJson,
-    jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
-  })
-  await plugin.renderStart()
-  const dir = 'path/to/json'
-  await plugin.writeBundle({ dir }, fakeBundles)
+  const writer = await excercisePlugin(fakePackageJson, undefined)
   const actualDependencies = writer.packageJson.dependencies
   const expectedDependencies = buildExpectedDependencies(fakePackageJson, fakeBundles)
   assert.deepEqual(actualDependencies, expectedDependencies, 'dependencies generated correctly')
 })
+
+test('appends to provided dependencies', async assert => {
+  const testPackageJson = { dependencies: { 'date-fns': '^2.14.0' } } // date-fns not in fakeBundles
+  const writer = await excercisePlugin(fakePackageJson, testPackageJson)
+  const actualDependencies = writer.packageJson.dependencies
+  const expectedDependencies = {
+    ...buildExpectedDependencies(fakePackageJson, fakeBundles),
+    ...testPackageJson.dependencies
+  }
+  assert.deepEqual(actualDependencies, expectedDependencies, 'bundle dependencies appended')
+})
+
+// Copied from plugin and tweaked just a bit for unit test
+const defaultFieldValues = {
+  name: `${fakePackageJson.name}-package-test`,
+  version: '1.0.0',
+  description: `Generated package test for ${fakePackageJson.name}`,
+  main: 'index.js',
+  scripts: {},
+  author: 'rollup-plugin-test-package-json',
+  devDependencies: {}
+}
+
+const specifiedFieldValues = {
+  name: 'unit-test-package-test',
+  version: '42.0.1-alpha00',
+  description: 'unit-test-values-for-testing',
+  main: 'mighty-plugin.mjs',
+  scripts: { test: 'tape -r esm src/**/*.js' },
+  author: 'rollup-plugin-test-package-json',
+  devDependencies: { iterablefu: '^0.4.1' }
+}
+
+chainable
+  .zipAll(
+    Object.keys(defaultFieldValues),
+    Object.values(defaultFieldValues),
+    Object.values(specifiedFieldValues)
+  )
+  .forEach(([name, defaultValue, specifiedValue]) => {
+    test(`when ${name} is unspecified in testPackageJson, default value is provided`, async assert => {
+      const writer = await excercisePlugin(fakePackageJson, undefined)
+      const actual = writer.packageJson[name]
+      assert.deepEqual(actual, defaultValue, `default ${name} provided correctly`)
+    })
+
+    test(`when ${name} is specified in testPackageJson, it is returned unchanged`, async assert => {
+      const testPackageJson = { [name]: specifiedValue }
+      const writer = await excercisePlugin(fakePackageJson, testPackageJson)
+      const actual = writer.packageJson[name]
+      assert.deepEqual(actual, specifiedValue, `specified ${name} provided correctly`)
+    })
+  })

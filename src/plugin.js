@@ -51,9 +51,12 @@ const createTestPackageJson = (testPackageJson, packageJson, bundle) => {
     author: 'rollup-plugin-test-package-json',
     devDependencies: {},
     ...testPackageJson,
+    // Up to this point, all testPackageJson fields overwrite defaults.
+    // Now merge testPackageJson provided dependencies with calculated dependencies.
+    // testPackageJson still overwrites any calculated dependencies
     dependencies: {
       ...buildTestDependencies(packageJson, collectDependencies(bundle)),
-      [packageJson.name]: packFileDependency(packageJson), // for some reason, not picking this up from Rollup
+      [packageJson.name]: packFileDependency(packageJson), // a dependency for the package itself
       ...testPackageJson.dependencies // we've already ensured that this exists
     }
   }
