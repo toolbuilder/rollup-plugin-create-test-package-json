@@ -2,7 +2,13 @@
   "name": "rollup-plugin-create-test-package-json",
   "description": "Creates a package.json for testing the pack file of your package, adds in required dependencies",
   "version": "0.1.0-rc0",
-  "keywords": [],
+  "keywords": [
+    "rollup",
+    "rollup-plugin",
+    "package-test",
+    "plugin",
+    "esm"
+  ],
   "license": "MIT",
   "main": "index.js",
   "module": "src/index.js",
