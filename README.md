@@ -5,7 +5,7 @@ If you create a separate package to test your package's pack file, you'll need a
 Here's the context in which this plugin is suitable:
 
 * Your unit tests are ES modules written using relative imports (e.g. '../src/some-file-from-your-module')
-* You want to reuse your unit tests as package testsjwith your package as an external dependency
+* You want to reuse your unit tests as package tests, with your package as an external dependency
 * You can use Rollup to convert unit tests to package tests with something like `rollup-plugin-relative-to-package`
 * You don't want to maintain dependencies in the `package.json` file for your package tests
 
@@ -37,14 +37,14 @@ Depending on your options, the generated `package.json` for your test package (*
 {
   "name": "your-package-name-package-test",
   "version": "1.0.0",
-  "description": "Generated package test for your-package-namet",
+  "description": "Generated package test for your-package-name",
   "main": "index.js",
   "scripts": {
     "test": "tape -r esm test/*_test.js"
   },
   "author": "rollup-plugin-test-package-json",
   "dependencies": {
-    "await-for-it": "file:your-package-name-0.1.0-alpha05.tgz",
+    "your-package-name": "file:your-package-name-0.1.0-alpha05.tgz",
     "zora": "^3.1.8",
     "iterablefu": "^0.4.1",
   },
