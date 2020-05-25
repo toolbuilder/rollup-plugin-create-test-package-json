@@ -75,7 +75,7 @@ export default (userOptions = {}) => {
 
     async renderStart (outputOptions, inputOptions) {
       try {
-        options.packageJson = options.packageJson || await readPackageJson(options.rootDir)
+        options.packageJson = await (options.packageJson || readPackageJson(options.rootDir))
       } catch (error) {
         this.error(`Problem loading package.json, check 'rootDir' option which is: ${options.rootDir}. Message ${error.message}`)
       }
@@ -86,7 +86,7 @@ export default (userOptions = {}) => {
     // renderError not needed
 
     async writeBundle (outputOptions, bundle) {
-      const testPackageJson = { dependencies: {}, ...options.testPackageJson } // ensure it has dependencies Object
+      const testPackageJson = { dependencies: {}, ...(await options.testPackageJson) } // ensure it has dependencies Object
       options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
       const outputDir = outputOptions.dir || dirname(outputOptions.file)
       const path = join(outputDir, 'package.json')

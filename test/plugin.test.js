@@ -133,6 +133,14 @@ test('infers package.json output path from outputOptions.file if provided', asyn
   assert.deepEqual(writer.path, join('do-not-care', 'package.json'), 'file used correctly')
 })
 
+test('accepts Promise in packageJson option', async assert => {
+  const packageJsonPromise = Promise.resolve(fakePackageJson)
+  const writer = await excercisePlugin(packageJsonPromise, undefined)
+  const actualDependencies = writer.packageJson.dependencies
+  const expectedDependencies = buildExpectedDependencies(fakePackageJson, fakeBundles)
+  assert.deepEqual(actualDependencies, expectedDependencies, 'dependencies generated correctly')
+})
+
 test('gets dependencies from bundles, and versions from package.json', async assert => {
   const writer = await excercisePlugin(fakePackageJson, undefined)
   const actualDependencies = writer.packageJson.dependencies
@@ -147,6 +155,18 @@ test('appends to provided dependencies', async assert => {
   const expectedDependencies = {
     ...buildExpectedDependencies(fakePackageJson, fakeBundles),
     ...testPackageJson.dependencies
+  }
+  assert.deepEqual(actualDependencies, expectedDependencies, 'bundle dependencies appended')
+})
+
+test('accepts Promise as testPackageJson parameter', async assert => {
+  const dependencies = { 'date-fns': '^2.14.0' }
+  const promiseTestPackageJson = Promise.resolve({ dependencies }) // date-fns not in fakeBundles
+  const writer = await excercisePlugin(fakePackageJson, promiseTestPackageJson)
+  const actualDependencies = writer.packageJson.dependencies
+  const expectedDependencies = {
+    ...buildExpectedDependencies(fakePackageJson, fakeBundles),
+    ...dependencies
   }
   assert.deepEqual(actualDependencies, expectedDependencies, 'bundle dependencies appended')
 })

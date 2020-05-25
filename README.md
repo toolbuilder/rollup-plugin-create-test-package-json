@@ -141,10 +141,12 @@ const defaultJsonWriter = async (path, json) => fs.writeJSON(path, json, { space
 
 ### packageJson
 
-* Type: `Object`
+* Type: `Object|Promise`
 * Default: `the local package.json from disk`
 
 This is the `package.json` of the **package you are testing**. If your package's `package.json` isn't suitable, you can use this option. If you set this option, the plugin will **not** read from the filesystem at all.
+
+You can pass a Promise that resolves to a `package.json` file if you want. That way, you can do some async configuration work in your `rollup.config.js`
 
 ### rootDir
 
@@ -155,12 +157,14 @@ This option tells the plugin where to look for the project's `package.json` if t
 
 ### testPackageJson
 
-* Type: `Object`
+* Type: `Object|Promise`
 * Default: `boilerplate package.json`
 
 Specify any fields you want to appear in the generated `package.json` file. Anything you specify will override the plugin's values. This plugin will generate the dependencies section and merge in the dependencies section you provide on top of the generated one. The generated dependency versions are read from the `packageJson` option.
 
-For example if you provide:
+You can pass a Promise that resolves to an Object if you want. That way, you can do some async configuration work in your `rollup.config.js`
+
+Here's an example. If you provide:
 
 ```javascript
   testPackageJson: {
