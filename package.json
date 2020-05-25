@@ -9,6 +9,14 @@
     "plugin",
     "esm"
   ],
+  "homepage": "https://github.com/toolbuilder/rollup-plugin-create-test-package-json#readme",
+  "bugs": {
+   "url": "https://github.com/toolbuilder/rollup-plugin-create-test-package-json/issues"
+  },
+  "repository": {
+   "type": "git",
+   "url": "https://github.com/toolbuilder/rollup-plugin-create-test-package-json.git"
+  },
   "license": "MIT",
   "main": "index.js",
   "module": "src/index.js",
