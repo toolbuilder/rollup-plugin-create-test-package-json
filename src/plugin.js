@@ -1,6 +1,7 @@
 import fs from 'fs-extra'
 import { dirname, join } from 'path'
 import pkgDir from 'pkg-dir'
+import merge from 'plain-object-merge'
 
 // Create the dependency version string for the pack file being tested.
 // This is how npm will name the pack file when 'npm pack' is called.
@@ -22,15 +23,16 @@ const collectDependencies = (bundle) => {
 }
 
 /*
-  Merge dependency version information from packageJson with
-  dependency ids from Rollup bundle generation.
+  Rollup just provides external dependency ids (e.g. 'lodash'), since
+  these dependencies must be in this package's 'package.json' file,
+  this function picks up the semantic versions from there.
+
   Parameter testDependencies is just an array of external package names
 */
 const buildTestDependencies = (packageJson, testDependencies) => {
   const allPackageDependencies = {
     ...packageJson.dependencies,
-    ...packageJson.devDependencies,
-    [packageJson.name]: packFileDependency(packageJson)
+    ...packageJson.devDependencies
   }
   const entries = testDependencies
     .map(dependency => [dependency, allPackageDependencies[dependency]])
@@ -43,7 +45,7 @@ const readPackageJson = async (rootDir) => {
 }
 
 const createTestPackageJson = (testPackageJson, packageJson, bundle) => {
-  return {
+  const generatedJson = {
     name: `${packageJson.name}-package-test`,
     version: '1.0.0',
     description: `Generated package test for ${packageJson.name}`,
@@ -51,17 +53,13 @@ const createTestPackageJson = (testPackageJson, packageJson, bundle) => {
     scripts: {},
     author: 'rollup-plugin-test-package-json',
     devDependencies: {},
-    ...testPackageJson,
-    // Up to this point, all testPackageJson fields overwrite defaults.
-    // Now merge testPackageJson provided dependencies with calculated dependencies.
-    // testPackageJson still overwrites any calculated dependencies
     dependencies: {
       ...buildTestDependencies(packageJson, collectDependencies(bundle)),
-      [packageJson.name]: packFileDependency(packageJson), // a dependency for the package itself,
-      ...(packageJson.peerDependencies || {}),
-      ...testPackageJson.dependencies // we've already ensured that this exists
+      [packageJson.name]: packFileDependency(packageJson), // a dependency for the package *.tgz itself,
+      ...(packageJson.peerDependencies || {}) // Pickup peer dependencies since Rollup doesn't see them.
     }
   }
+  return merge([generatedJson, testPackageJson]) // testPackageJson takes precedence
 }
 
 export default (userOptions = {}) => {
@@ -88,7 +86,7 @@ export default (userOptions = {}) => {
     // renderError not needed
 
     async writeBundle (outputOptions, bundle) {
-      const testPackageJson = { dependencies: {}, ...(await options.testPackageJson) } // ensure it has dependencies Object
+      const testPackageJson = await options.testPackageJson
       options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
       const outputDir = outputOptions.dir || dirname(outputOptions.file)
       const path = join(outputDir, 'package.json')

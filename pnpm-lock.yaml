@@ -2,6 +2,7 @@ dependencies:
   esm: 3.2.25
   fs-extra: 9.0.0
   pkg-dir: 4.2.0
+  plain-object-merge: 1.0.1
 devDependencies:
   '@toolbuilder/eslint-config': 0.1.2
   '@toolbuilder/package-json-lint-config': 0.1.0_npm-package-json-lint@5.1.0
@@ -1572,6 +1573,12 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==
+  /is-primitive/3.0.1:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha512-GljRxhWvlCNRfZyORiH77FwdFwGcMO620o37EOYC0ORWdq+WYNVqW0w2Juzew4M+L81l6/QS3t5gkkihyRqv9w==
   /is-regex/1.0.5:
     dependencies:
       has: 1.0.3
@@ -2351,6 +2358,17 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
+  /plain-object-clone/1.1.0:
+    dev: false
+    resolution:
+      integrity: sha512-olscJ1tyukoPom5QOzjwhz0qU+Nwr/8PmdghaPObq9CQR8bNZ+kChpw5HIO/pwIbMR2woroN+W7ZCD1S3BO4sQ==
+  /plain-object-merge/1.0.1:
+    dependencies:
+      is-primitive: 3.0.1
+      plain-object-clone: 1.1.0
+    dev: false
+    resolution:
+      integrity: sha512-Oway6skPQ2uLG1NkDDnUQbDOPDIeGCNSnDnWuXZ3deviD2FaYQtfXUmET5Oq9tqdToMEYP7WhWO4lqv8bogRFA==
   /plur/4.0.0:
     dependencies:
       irregular-plurals: 3.2.0
@@ -3325,6 +3343,7 @@ specifiers:
   npm-package-json-lint: 5.1.0
   npm-run-all: 4.1.5
   pkg-dir: ^4.2.0
+  plain-object-merge: ^1.0.1
   rollup: 2.18.0
   rollup-plugin-multi-input: ^1.1.1
   rollup-plugin-relative-to-package: ^0.1.1

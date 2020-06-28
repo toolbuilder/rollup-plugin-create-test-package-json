@@ -40,7 +40,8 @@
   "dependencies": {
     "esm": "3.2.25",
     "fs-extra": "^9.0.0",
-    "pkg-dir": "^4.2.0"
+    "pkg-dir": "^4.2.0",
+    "plain-object-merge": "^1.0.1"
   },
   "devDependencies": {
     "@toolbuilder/eslint-config": ">=0.1.2",
