@@ -32,7 +32,8 @@ const buildTestDependencies = (packageJson, testDependencies) => {
     ...packageJson.devDependencies,
     [packageJson.name]: packFileDependency(packageJson)
   }
-  const entries = testDependencies.map(dependency => [dependency, allPackageDependencies[dependency]])
+  const entries = testDependencies
+    .map(dependency => [dependency, allPackageDependencies[dependency]])
   return Object.fromEntries(entries)
 }
 
@@ -56,7 +57,8 @@ const createTestPackageJson = (testPackageJson, packageJson, bundle) => {
     // testPackageJson still overwrites any calculated dependencies
     dependencies: {
       ...buildTestDependencies(packageJson, collectDependencies(bundle)),
-      [packageJson.name]: packFileDependency(packageJson), // a dependency for the package itself
+      [packageJson.name]: packFileDependency(packageJson), // a dependency for the package itself,
+      ...(packageJson.peerDependencies || {}),
       ...testPackageJson.dependencies // we've already ensured that this exists
     }
   }

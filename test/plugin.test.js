@@ -1,5 +1,3 @@
-import cuid from 'cuid'
-import { format } from 'date-fns'
 import fs from 'fs-extra'
 import { chainable } from 'iterablefu'
 import { tmpdir } from 'os'
@@ -7,11 +5,7 @@ import { join } from 'path'
 import { test } from 'zora'
 import createTestPackageJson from '../src/plugin'
 
-const makeTempPath = (prefix) => {
-  // formatISO emits colons for the time part, which can be problematic on command lines as NPM parameters
-  const timePart = format(Date.now(), 'yyyy-MM-dd-kk-mm')
-  return join(tmpdir(), `${prefix}-${timePart}-${cuid.slug()}`) // slug provides uniqueness in same minute
-}
+const makeTempPath = (prefix) => join(tmpdir(), `${Date.now()}`)
 
 const fakeBundles = {
   dep1: { type: 'chunk', imports: ['lodash', 'underscore', 'cuid'] },
@@ -61,7 +55,10 @@ const buildExpectedDependencies = (packageJson, bundles) => {
     .map(name => [name, allDependencies[name]])
     .toArray()
     .concat([['fake-package', 'file:fake-package-1.0.0-superfake.tgz']])
-  return Object.fromEntries(expectedEntries)
+  return {
+    ...Object.fromEntries(expectedEntries),
+    ...(packageJson.peerDependencies || {})
+  }
 }
 
 const excercisePlugin = async (packageJson, testPackageJson) => {
@@ -131,6 +128,14 @@ test('infers package.json output path from outputOptions.file if provided', asyn
   await plugin.renderStart()
   await plugin.writeBundle({ file: join('do-not-care', 'bundle.js') }, fakeBundles)
   assert.deepEqual(writer.path, join('do-not-care', 'package.json'), 'file used correctly')
+})
+
+test('includes peer dependencies from packageJson in testPackageJson', async assert => {
+  const packageJson = { ...fakePackageJson, peerDependencies: { georgeOfTheJungle: '^2.32.23' } }
+  const writer = await excercisePlugin(packageJson, undefined)
+  const actualDependencies = writer.packageJson.dependencies
+  const expectedDependencies = buildExpectedDependencies(packageJson, fakeBundles)
+  assert.deepEqual(actualDependencies, expectedDependencies, 'bundle dependencies appended')
 })
 
 test('accepts Promise in packageJson option', async assert => {
