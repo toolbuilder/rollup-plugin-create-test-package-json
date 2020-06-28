@@ -29,7 +29,15 @@ npm install --save-dev rollup-plugin-create-test-package-json
 
 ## Use
 
-The file [rollup.test.config.js](./rollup.test.config.js) in this package provides a complete working example that validates this package before release.
+The file [rollup.test.config.js](./rollup.test.config.js) in this package provides a complete working example that validates this package before release. If you have [pnpm](https://pnpm.js.org/) installed, you can run it like this:
+
+```bash
+# Requires pnpm
+# Only tested on Linux
+pnpm run check:packfile
+```
+
+You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rollup.test.config.js).
 
 ## Options
 
@@ -103,3 +111,15 @@ But your package's `package.json` says this:
 ```
 
 This plugin will use '^5.0.0' instead of '^4.17.15' for `lodash` in the generated `package.json`. It would have used '^4.17.15' from the `packageJson` option by default.
+
+## Contributing
+
+So far, this plugin has only been tested on Linux. Contributions are very welcome. Please create a pull request or write up an issue. This package uses the [pnpm](https://pnpm.js.org/) package manager. Run `pnpm run check` to run all the unit tests and validation scripts. You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rollup.test.config.js).
+
+## Issues
+
+This project uses Github issues.
+
+## License
+
+MIT
