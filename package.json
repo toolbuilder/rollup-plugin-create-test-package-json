@@ -55,7 +55,7 @@
     "rollup": "2.18.0",
     "rollup-plugin-multi-input": "^1.1.1",
     "rollup-plugin-relative-to-package": "^0.1.1",
-    "standard-version": "8.0.0",
+    "standard-version": "8.0.1",
     "tape": "5.0.1",
     "uncommitted": "1.0.0",
     "zora": "4.0.0"
