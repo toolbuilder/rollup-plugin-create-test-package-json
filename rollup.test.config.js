@@ -16,7 +16,7 @@ export default [
     preserveModules: true, // Generate one unit test for each input unit test
     output: {
       format: 'es',
-      dir: testPackageDir
+      dir: testPackageDir // createTestPackageJson uses this as output directory
     },
     plugins: [
       multiInput(), // Handles the input glob above
