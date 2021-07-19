@@ -111,7 +111,7 @@ test('does not load external package.json when one is provided', async assert =>
 test('uses outputOptions.dir for package.json location if available', async assert => {
   const writer = new FakeJsonWriter()
   const plugin = createTestPackageJson({
-    fakePackageJson,
+    packageJson: fakePackageJson,
     jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
   })
   await plugin.renderStart()
@@ -122,12 +122,25 @@ test('uses outputOptions.dir for package.json location if available', async asse
 test('infers package.json output path from outputOptions.file if provided', async assert => {
   const writer = new FakeJsonWriter()
   const plugin = createTestPackageJson({
-    fakePackageJson,
+    packageJson: fakePackageJson,
     jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
   })
   await plugin.renderStart()
   await plugin.writeBundle({ file: join('do-not-care', 'bundle.js') }, fakeBundles)
   assert.deepEqual(writer.path, join('do-not-care', 'package.json'), 'file used correctly')
+})
+
+test('uses outputDir when provided as an option', async assert => {
+  const writer = new FakeJsonWriter()
+  const outputDir = 'user-specified-output-dir'
+  const plugin = createTestPackageJson({
+    packageJson: fakePackageJson,
+    outputDir,
+    jsonWriter: async (j, p, o) => { writer.writeJson(j, p, o) }
+  })
+  await plugin.renderStart()
+  await plugin.writeBundle({ file: join('do-not-care', 'bundle.js') }, fakeBundles)
+  assert.deepEqual(writer.path, join(outputDir, 'package.json'), 'outputDir option used correctly')
 })
 
 test('includes peer dependencies from packageJson in testPackageJson', async assert => {

@@ -67,6 +67,7 @@ export default (userOptions = {}) => {
     rootDir: undefined, // where to find packageJson if not provided
     packageJson: undefined, // information about package to be tested
     testPackageJson: {}, // package.json for test package to be enhanced by this plugin
+    outputDir: undefined, // where to place generated packageJson
     jsonWriter: async (path, json) => fs.writeJSON(path, json, { spaces: 2 }), // option for unit tests
     ...userOptions
   }
@@ -88,7 +89,7 @@ export default (userOptions = {}) => {
     async writeBundle (outputOptions, bundle) {
       const testPackageJson = await options.testPackageJson
       options.testPackageJson = createTestPackageJson(testPackageJson, options.packageJson, bundle)
-      const outputDir = outputOptions.dir || dirname(outputOptions.file)
+      const outputDir = options.outputDir || outputOptions.dir || dirname(outputOptions.file)
       const path = join(outputDir, 'package.json')
       await options.jsonWriter(path, options.testPackageJson)
     }
