@@ -1,23 +1,20 @@
 # Rollup-Plugin-Create-Test-Package-Json
 
-If you create a separate package to test your package's pack file, you'll need a `package.json` for it. This [Rollup](https://rollupjs.org/guide/en/) plugin generates that `package.json` file for you.
+If you create a separate package to test your package's [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack), you'll need a `package.json` for it. This [Rollup](https://rollupjs.org/guide/en/) plugin generates that `package.json` file for you. This plugin is used by [@toolbuilder/rollup-plugin-test-tools](https://github.com/toolbuilder/rollup-plugin-test-tools), which tests your [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack) in temporary ES, CommonJS, and Electron projects.
 
 This plugin:
 
-* Grabs the external dependencies for the unit tests as Rollup is generating them
-* Uses the package versions specified in your `package.json` for the external dependencies
-* Pulls peer dependencies from your `package.json`
-* Merges the fields you specify in the plugin options into the generated `package.json` for the test
+* Grabs the external dependencies for the unit tests as Rollup is generating them.
+* Uses the package [semver ranges](https://github.com/npm/node-semver) in your `package.json` for the external dependencies.
+* Pulls peer dependencies from your `package.json`.
+* Merges the fields you specify in the plugin options into the generated `package.json`.
 * Writes the `package.json` to Rollup's `output.dir` or to `dirname(output.file)` if `output.file` is specified.
-
-This plugin is used by [@toolbuilder/rollup-config-pkgtest](https://github.com/toolbuilder/rollup-config-pkgtest), which builds and runs package tests in a temporary package.
 
 Here's the context in which this plugin is suitable:
 
-* Your unit tests are ES modules written using relative imports (e.g. `../src/some-file-from-your-module`)
-* You want to reuse your unit tests as package tests, with your package as an external dependency
-* You can use Rollup to convert unit tests to package tests with something like [rollup-plugin-relative-to-package](https://github.com/toolbuilder/rollup-plugin-relative-to-package)
-* You don't want to manually maintain dependencies in the `package.json` file for your package tests
+* Your tests are ES modules that Rollup can process.
+* You want to reuse your unit tests as package tests, with your package as an external dependency.
+* You don't want to manually generate a `package.json` file for your test project.
 
 ## Installation
 
@@ -29,11 +26,11 @@ npm install --save-dev rollup-plugin-create-test-package-json
 
 ## Use
 
-The file [rollup.test.config.js](./rollup.test.config.js) in this package provides a complete working example that validates this package before release. If you have [pnpm](https://pnpm.js.org/) installed, you can run it like this:
+The file [rollup.test.config.js](./rollup.test.config.js) in this package provides a complete working example that validates this package before release. You can run it like this:
 
 ```bash
-# Requires pnpm
-# Only tested on Linux
+npm install -g pnpm
+pnpm install
 pnpm run check:packfile
 ```
 
@@ -41,7 +38,7 @@ You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rol
 
 ## Options
 
-The plugin works without options. You will almost certainly want to use the `testPackageJson` option so you can specify a `scripts` section and perhaps a `devDependencies` section for your test runner.
+The plugin works without options. However, you will need the `testPackageJson` option so you can specify a `scripts` section and perhaps some `devDependencies` for your test runner.
 
 ### jsonWriter
 
@@ -50,8 +47,8 @@ The plugin works without options. You will almost certainly want to use the `tes
 
 Use `jsonWriter` if you don't like how this plugin writes `package.json` by default. The parameters are:
 
-* path - the full path name of the package.json file. For example: `/tmp/package-test-451/package.json`
-* testPackageJson - the package.json Object that the plugin is writing
+* path - the full path name of the `package.json` file. For example: `/tmp/package-test-451/package.json`
+* json - the package.json Object that the plugin is writing
 
 This is more or less what the default function looks like:
 
@@ -67,14 +64,14 @@ const defaultJsonWriter = async (path, json) => fs.writeJSON(path, json, { space
 
 This is the `package.json` of the **package you are testing**. If your package's `package.json` isn't suitable, you can use this option. If you set this option, the plugin will **not** read from the filesystem at all. This option exists primarily to support unit testing.
 
-NOTE: You can pass a Promise that resolves to a `package.json` Object if you want. That way, you can do some async configuration work in your `rollup.config.js`
+NOTE: You can pass a Promise that resolves to a `package.json` Object if you want. That way, you can do some async configuration work in your `rollup.config.js`. The `reject` method should be passed an `Error` object if there is a problem. The `error.message` will be passed to Rollup, and further processing will stop.
 
 ### rootDir
 
 * Type: `String`
 * Default: `process.cwd()`
 
-This option tells the plugin where to look for the project's `package.json` if the `packageJson` option is not specified. This plugin will start looking for a `package.json` at `rootDir` and walk up the directory structure until it finds one, or fails at the root directly.
+This option tells the plugin where to look for the project's `package.json` if the `packageJson` option is not specified. This plugin will start looking for a `package.json` at `rootDir` and walk up the directory structure until it finds one.
 
 ### outputDir
 
@@ -88,11 +85,11 @@ This option tells the plugin where to write the generated `package.json` file. W
 * Type: `Object|Promise`
 * Default: `boilerplate package.json`
 
-This plugin automatically grabs dependencies from the generated unit tests, and picks up the version specifiers from `package.json`. However, it doesn't know how to run your unit tests. Specify the parts of the `package.json` required to run the unit tests with this option. Anything you specify will override the values generated by the plugin.
+This plugin automatically grabs dependencies from the generated unit tests, and picks up the [semver ranges](https://github.com/npm/node-semver) from `package.json`. However, it doesn't know how to run your unit tests. Specify the parts of the `package.json` required to run the unit tests with this option. Anything you specify will override the values generated by the plugin.
 
-NOTE: You can pass a Promise that resolves to an Object if you want. That way, you can do some async configuration work in your `rollup.config.js`
+NOTE: You can pass a Promise that resolves to `testPackageJson` if you want. That way, you can do some async configuration work in your `rollup.config.js`.  The `reject` method should be passed an `Error` object if there is a problem. The `error.message` will be passed to Rollup, and further processing will stop.
 
-Here's an example. If you provide:
+Here's a `testPackageJson` example. If you provide:
 
 ```javascript
   testPackageJson: {
@@ -100,7 +97,9 @@ Here's an example. If you provide:
     scripts: { test: 'tape -r esm test/**/*.js' }, // copied over directly
     customField: 'whatever', // copied over directly
     dependencies: {
-      'lodash': '^5.0.0' // will override the value read from packageJson
+       // lodash will override the value read from packageJson even though it is incompatible,
+       // and in a different dependency section. See option.checkSemverConflicts.
+      'lodash': '^5.0.0'
     }
     devDependencies: { // devDependencies copied over directly
       "esm": "^3.2.25",
@@ -112,16 +111,38 @@ Here's an example. If you provide:
 But your package's `package.json` says this:
 
 ```json
-  "depencencies": {
+  "devDepencencies": {
     "lodash": "^4.17.15"
   }
 ```
 
-This plugin will use '^5.0.0' instead of '^4.17.15' for `lodash` in the generated `package.json`. It would have used '^4.17.15' from the `packageJson` option by default.
+In this example, the plugin will use `lodash` '^5.0.0' instead of '^4.17.15' in the generated `package.json`. By default, it would have used '^4.17.15' from the `packageJson` option. The generated `package.json` will have `lodash': '^5.0.0` in the dependencies section as specified by `testPackageJson`.
+
+**Note** that the ranges '^5.0.0' and '^4.17.15' do not intersect. This may be a problem that you want to detect. If so, use `options.checkSemverConflicts`.
+
+## checkSemverConflicts
+
+* Type: `boolean`
+* Default: `false`
+
+This option only matters if you specify dependencies in the `testPackageJson` option, and you are copying unit tests from your project to your test project. If the generated `package.json` specifies a dependency that is incompatible with your unit tests, there will be a problem.
+
+By default, the plugin reads [semver ranges](https://github.com/npm/node-semver) from your `package.json` file or `options.packageJson` if provided. If your `testPackageJson` specifies the same dependency, the semver range from `testPackageJson` will be used instead. If the `testPackageJson` semver range conflicts with your `package.json`, there may be a problem. Set this option to `true` if you want to check if the semver ranges intersect, and generate an error if they do not. The plugin will not generate a `package.json` file if there is an error.
 
 ## Contributing
 
-So far, this plugin has only been tested on Linux. Contributions are very welcome. Please create a pull request or write up an issue. This package uses the [pnpm](https://pnpm.js.org/) package manager. Run `pnpm run check` to run all the unit tests and validation scripts. You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rollup.test.config.js).
+So far, this plugin has only been tested on Linux. Contributions, bug reports, documentation issues, are all very welcome. Please create a pull request or write up an issue.
+
+* I use [pnpm](https://pnpm.js.org/) instead of npm.
+* Run the unit tests with `pnpm test`
+* Package verification requires [pnpm](https://pnpm.io/) to be installed globally.
+  * `npm install -g pnpm`
+  * `pnpm install`
+  * `pnpm test` to run unit tests
+  * `pnpm run check:packfile` to show this plugin in action.
+  * `pnpm run check` to validate the package is ready for commit
+
+You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rollup.test.config.js).
 
 ## Issues
 

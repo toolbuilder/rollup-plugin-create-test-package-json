@@ -25,20 +25,21 @@ export default [
     plugins: [
       multiInput(), // Handles the input glob above
       relativeToPackage({ // Converts relative imports to package imports
-        modulePaths: 'src/**/*.js'
+        modulePaths: 'src/**/*.js' // where this project's source is located
       }),
       // This package: rollup-plugin-create-test-package-json...
       createTestPackageJson({ // Creates package.json for testPackageDir
+        checkSemverConflicts: true,
         // Provide information that plugin can't pick up for itself
         testPackageJson: {
           scripts: {
             test: 'tape -r esm test/**/*test.js | tap-nirvana'
           },
-          // dependencies are populated automatically
           devDependencies: {
             // These are dependencies for the test runner,
-            // and don't appear in the unit tests.
+            // they don't appear in the unit tests.
             esm: '^3.2.25',
+            // tape semver range is different in package.json but intersects, so checkSemverConflicts is ok
             tape: '^5.0.1',
             'tap-nirvana': '^1.1.0'
           }
@@ -49,7 +50,8 @@ export default [
       }),
       runCommands({
         commands: [
-          // Install dependencies and run the unit test
+          // Install dependencies and run the unit tests
+          // The -C prevents the test from picking up dependencies from this project
           shellCommand(`pnpm -C ${testPackageDir} install-test`)
         ]
       })
