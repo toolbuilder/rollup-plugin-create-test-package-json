@@ -5,9 +5,13 @@ import createPackFile from '@toolbuilder/rollup-plugin-create-pack-file'
 import runCommands, { shellCommand } from '@toolbuilder/rollup-plugin-commands'
 import { tmpdir } from 'os'
 import { join } from 'path'
+import { customAlphabet } from 'nanoid'
+
+const nanoid = customAlphabet('1234567890abcdef', 10)
+const makeTempPath = (prefix) => join(tmpdir(), `${prefix}-${Date.now()}-${nanoid()}`)
 
 // This is where the test package is created
-const testPackageDir = join(tmpdir(), `${Date.now()}`)
+const testPackageDir = makeTempPath('rollup-plugin-create-test-package-json')
 
 export default [
   {
