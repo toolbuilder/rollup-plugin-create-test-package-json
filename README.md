@@ -120,7 +120,7 @@ In this example, the plugin will use `lodash` '^5.0.0' instead of '^4.17.15' in 
 
 **Note** that the ranges '^5.0.0' and '^4.17.15' do not intersect. This may be a problem that you want to detect. If so, use `options.checkSemverConflicts`.
 
-## checkSemverConflicts
+### checkSemverConflicts
 
 * Type: `boolean`
 * Default: `false`
