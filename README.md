@@ -1,6 +1,8 @@
 # Rollup-Plugin-Create-Test-Package-Json
 
-If you create a separate package to test your package's [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack), you'll need a `package.json` for it. This [Rollup](https://rollupjs.org/guide/en/) plugin generates that `package.json` file for you. This plugin is used by [@toolbuilder/rollup-plugin-test-tools](https://github.com/toolbuilder/rollup-plugin-test-tools), which tests your [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack) in temporary ES, CommonJS, and Electron projects.
+This [Rollup](https://rollupjs.org/guide/en/) plugin supports [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack) testing by creating a `package.json` for a separate project that tests the pack file.
+
+This plugin is used by [@toolbuilder/rollup-plugin-test-tools](https://github.com/toolbuilder/rollup-plugin-test-tools), which tests your [pack file](https://docs.npmjs.com/cli/v6/commands/npm-pack) in temporary ES, CommonJS, and Electron projects.
 
 This plugin:
 
@@ -12,7 +14,7 @@ This plugin:
 
 Here's the context in which this plugin is suitable:
 
-* Your tests are ES modules that Rollup can process.
+* Your tests are ECMAScript modules that Rollup can process.
 * You want to reuse your unit tests as package tests, with your package as an external dependency.
 * You don't want to manually generate a `package.json` file for your test project.
 
@@ -38,7 +40,7 @@ You can use `npm` if you change `pnpm` to `npm` in [rollup.test.config.js](./rol
 
 ## Options
 
-The plugin works without options. However, you will need the `testPackageJson` option so you can specify a `scripts` section and perhaps some `devDependencies` for your test runner.
+The plugin works without options. However, you will need the `testPackageJson` option so you can specify a `scripts` section and probably some `devDependencies` for your test runner.
 
 ### jsonWriter
 

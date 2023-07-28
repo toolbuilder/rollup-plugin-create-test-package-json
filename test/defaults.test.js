@@ -13,7 +13,7 @@ import { exercisePlugin, fakePackageJson } from './common.js'
   * options.rootDir is tested in file-access.test.js
   * options.outputDir is tested in file-access.test.js
   * options.testPackageJson is tested in plugin.test.js
-  * options.checkSemverConflicts is tested in plugin.test.js
+  * options.checkSemverConflicts is tested in semver-conflicts.test.js
   * options.jsonWriter is used for most of the tests
 */
 

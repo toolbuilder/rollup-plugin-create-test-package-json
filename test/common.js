@@ -1,4 +1,4 @@
-import createTestPackageJson from '../src/plugin'
+import createTestPackageJson from 'rollup-plugin-create-test-package-json'
 import { chainable } from 'iterablefu'
 
 export const isString = (item) => typeof item === 'string' || item instanceof String

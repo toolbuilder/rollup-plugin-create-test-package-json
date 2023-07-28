@@ -2,7 +2,7 @@ import { test } from 'zora'
 import fs from 'fs-extra'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import createTestPackageJson from '../src/plugin'
+import createTestPackageJson from 'rollup-plugin-create-test-package-json'
 import { exercisePlugin, fakeBundles, FakeJsonWriter, fakePackageJson, isString } from './common.js'
 import { customAlphabet } from 'nanoid'
 
