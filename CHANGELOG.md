@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/toolbuilder/rollup-plugin-create-test-package-json/compare/v1.0.0...v1.1.0) (2023-08-02)
+
+
+### Features
+
+* release is now a dual package ([ac53e4b](https://github.com/toolbuilder/rollup-plugin-create-test-package-json/commit/ac53e4b1ff5804e6d45d26efab1756760d7b7b2d))
+
 ## [1.0.0](https://github.com/toolbuilder/rollup-plugin-create-test-package-json/compare/v0.1.3...v1.0.0) (2022-01-22)
 
 
