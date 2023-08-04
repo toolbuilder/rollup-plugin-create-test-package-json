@@ -1,10 +1,14 @@
 import createTestPackageJson from './src/plugin.js'
-import multiInput from 'rollup-plugin-multi-input'
+import multiInputPkg from 'rollup-plugin-multi-input'
 import createPackFile from '@toolbuilder/rollup-plugin-create-pack-file'
 import runCommands, { shellCommand } from '@toolbuilder/rollup-plugin-commands'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { customAlphabet } from 'nanoid'
+
+// multiInput is CJS module transpiled from TypeScript. Default is not coming in properly.
+const isFunction = object => object && typeof (object) === 'function'
+const multiInput = isFunction(multiInputPkg) ? multiInputPkg : multiInputPkg.default
 
 // make a unique number so that each Rollup run produces a different temporary directory
 const nanoid = customAlphabet('1234567890abcdef', 10)
@@ -19,10 +23,10 @@ export default [
     // also specify that output goes in 'test' directory of testPackageDir
     // The multiInput plugin will process the glob
     input: ['test/**/*test.js'],
-    preserveModules: true, // Generate one unit test for each input unit test
     output: {
       format: 'es', // could be 'cjs' instead since we're testing a dual package
-      dir: testPackageDir // createTestPackageJson uses this as output directory
+      dir: testPackageDir, // createTestPackageJson uses this as output directory
+      preserveModules: true // Generate one unit test for each input unit test
     },
     plugins: [
       multiInput(), // Handles the input glob above

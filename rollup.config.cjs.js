@@ -7,11 +7,11 @@
 export default [
   {
     input: 'src/plugin.js',
-    preserveModules: true,
     output: {
       dir: 'cjs',
       format: 'cjs',
-      exports: 'default'
+      exports: 'default',
+      preserveModules: true
     }
   }
 ]
