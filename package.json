@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-create-test-package-json",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Creates a package.json for testing the pack file of your package, adds in required dependencies.",
   "keywords": [
     "rollup",
