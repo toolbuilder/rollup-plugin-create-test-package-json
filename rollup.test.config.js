@@ -1,14 +1,23 @@
 import createTestPackageJson from './src/plugin.js'
-import multiInputPkg from 'rollup-plugin-multi-input'
 import createPackFile from '@toolbuilder/rollup-plugin-create-pack-file'
 import runCommands, { shellCommand } from '@toolbuilder/rollup-plugin-commands'
+import { globSync } from 'glob'
 import { tmpdir } from 'os'
+import path from 'node:path'
 import { join } from 'path'
 import { customAlphabet } from 'nanoid'
+import { fileURLToPath } from 'node:url'
 
-// multiInput is CJS module transpiled from TypeScript. Default is not coming in properly.
-const isFunction = object => object && typeof (object) === 'function'
-const multiInput = isFunction(multiInputPkg) ? multiInputPkg : multiInputPkg.default
+// This is recommended way of preserving directory structure and processing all files
+// rather than using 'preserveModules: true', which involves tree-shaking and virtual files
+const mapInputs = (glob) => Object.fromEntries(
+  globSync(glob).map(file => [
+    // Provide <dir structure>/<file basename> relative to package root, no file extension
+    path.relative('.', file.slice(0, file.length - path.extname(file).length)),
+    // Provide absolute filepath of input file
+    fileURLToPath(new URL(file, import.meta.url))
+  ])
+)
 
 // make a unique number so that each Rollup run produces a different temporary directory
 const nanoid = customAlphabet('1234567890abcdef', 10)
@@ -22,14 +31,14 @@ export default [
     // process all unit tests matching this glob
     // also specify that output goes in 'test' directory of testPackageDir
     // The multiInput plugin will process the glob
-    input: ['test/**/*test.js'],
+    input: mapInputs(['test/**/*test.js']),
+    external: (id) => !(id.startsWith('.') || id.startsWith('/')),
     output: {
       format: 'es', // could be 'cjs' instead since we're testing a dual package
       dir: testPackageDir, // createTestPackageJson uses this as output directory
-      preserveModules: true // Generate one unit test for each input unit test
+      preserveModules: false // Generate one unit test for each input unit test
     },
     plugins: [
-      multiInput(), // Handles the input glob above
       // Use this package to test this package...
       createTestPackageJson({ // Creates package.json for testPackageDir
         checkSemverConflicts: true,
